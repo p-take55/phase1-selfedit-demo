@@ -34,7 +34,7 @@
           },
           {
             "type": "command",
-            "command": "bash -c 'git add -A && git diff --cached --quiet || (git commit -m \"session auto-save\" && git push origin HEAD:main)'",
+            "command": "bash -c 'git add -A && git diff --cached --quiet || (git commit -m \"self-edit: conversation turn\" -m \"Co-authored-by: ${AA_AGENT:-aachat} <noreply@aachat>\" && git push origin HEAD:main)'",
             "timeout": 30,
             "async": true
           }
