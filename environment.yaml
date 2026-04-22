@@ -1,0 +1,20 @@
+name: default
+description: ""
+config:
+  packages:
+    # apt:
+    #   - jq
+    #   - ffmpeg
+    # brew:
+    #   - gh
+    #   - supabase/tap/supabase
+    # pip:
+    #   - pandas
+    #   - httpie
+    # npm:
+    #   - typescript
+    #   - prettier
+    # cargo:
+    #   - ripgrep
+  networking:
+    type: unrestricted

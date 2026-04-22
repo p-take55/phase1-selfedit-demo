@@ -1,0 +1,16 @@
+# プラットフォーム生成（セッションごとに再生成される）
+.claude/skills/aachat/
+.claude/skills/environment/
+.claude/skills/project-setup/
+
+# プロジェクトデータ（セッションごとに再生成）
+projects/
+
+# 秘密情報
+.env*
+*.key
+*.pem
+secrets/
+
+# OS
+.DS_Store

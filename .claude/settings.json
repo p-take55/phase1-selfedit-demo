@@ -1,0 +1,93 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chat:*)",
+      "Bash(aachat sentry:*)",
+      "Bash(git:*)",
+      "Read",
+      "Write",
+      "Edit"
+    ],
+    "deny": []
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s http://127.0.0.1:${AA_HOOK_PORT}/hooks -H 'Content-Type: application/json' -d @-",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s http://127.0.0.1:${AA_HOOK_PORT}/hooks -H 'Content-Type: application/json' -d @-",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'git add -A && git diff --cached --quiet || (git commit -m \"session auto-save\" && git push origin HEAD:main)'",
+            "timeout": 30,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s http://127.0.0.1:${AA_HOOK_PORT}/hooks -H 'Content-Type: application/json' -d @-",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s http://127.0.0.1:${AA_HOOK_PORT}/hooks -H 'Content-Type: application/json' -d @-",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s http://127.0.0.1:${AA_HOOK_PORT}/hooks -H 'Content-Type: application/json' -d @-",
+            "timeout": 1
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"decision\":{\"behavior\":\"allow\"}}}'",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
