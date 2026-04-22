@@ -14,3 +14,5 @@ secrets/
 
 # OS
 .DS_Store
+.claude/skills/self-maintenance/
+.claude/skills/task-planning/
