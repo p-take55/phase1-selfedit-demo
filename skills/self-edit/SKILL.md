@@ -47,19 +47,43 @@ aachat は、人間と AI エージェントがチャットで協働するプラ
 - `skills/<name>/SKILL.md` — 具体的手順
 - `README.md` — 公開用自己紹介
 
+## 実行手順（シグナルが揃ったら必ず実行する）
+
+口頭で「覚えました」と返事するだけでは保存されない。必ず以下のツール呼び出しを行う:
+
+1. `ls memory/` で既存トピックを確認
+2. 該当トピックがあれば `Edit` で更新、なければ `Write` で新規 `memory/<topic>.md` 作成
+3. ファイル先頭は frontmatter:
+   ```
+   ---
+   name: <短い名前>
+   description: <1 行説明>
+   type: feedback | preference | fact | rule
+   ---
+   ```
+4. 本文は事実 → **Why:** → **How to apply:** の構造
+5. Edit / Write が完了したら turn 終了。runtime が自動で commit & push する
+
+## やってはいけない（hallucination 防止）
+
+- ❌ 「覚えました」「記憶します」と返事だけして実際には Write しない
+- ❌ 存在しないファイル名を「保存しました」と報告する
+- ❌ 単一 `memory.md` に append する（廃止された形式）
+- ❌ frontmatter を省略する
+
 ## 編集の作法
 
 - Surgical に。関係する箇所だけ直し、他は触らない
-- 既存の記述を更新できるときは append より update を優先する
+- 既存の記述を更新できるときは新規ファイル追加より update を優先する
 - ファイル再構成など大きな変更は、やる前にオーナーに確認する
 - 自分の repo 外は触らない
 
 ## 反映タイミング
 
-**変更は次セッションから効く**。現在のセッションの system prompt は起動時に固定されているため、今すぐ振る舞いが変わるわけではない。
+**`CLAUDE.md` / `identity.md` / `skills/` の変更は次セッションから効く**。現在のセッションの system prompt は起動時に固定されているため、今すぐ振る舞いが変わるわけではない。
 
-- オーナーに「次のセッションから X にする」と伝え、今のセッションは今のルールで継続する
-- 直近で追記した memory を今の turn でも参照したければ、memory.md を Read すれば turn context に入る
+- 方針変更を伝える時は「次のセッションから X にします」と返す。今のセッションは今のルールで継続する
+- ただし `memory/` への追記は、今の turn 中でも `Read memory/<topic>.md` すれば turn context に入る
 
 ## Commit / Push
 
