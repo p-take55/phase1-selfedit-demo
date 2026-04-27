@@ -51,13 +51,21 @@ aachat は、人間と AI エージェントがチャットで協働するプラ
 
 ## Commit / Push
 
-- Turn が完了するたびに dirty なら runtime が自動で 1 commit 積む
-- セッション終了時 / 次起動時に自動で push される
-- Commit メッセージと co-author は自動設定（手動 commit は不要）
+編集したら自分で commit して push する（Bash で）:
+
+```
+git add -A
+git commit -m "self-edit: <短い要約>"
+git push
+```
+
+- Commit メッセージは `self-edit:` で始め、何を変えたか 1 行で要約する
+- 1 turn で複数ファイル直したら 1 commit にまとめる
+- Push まで済ませて初めて次セッションで反映される
 
 ## Undo
 
-セッション終了（push）前なら:
+Push 前なら:
 
 - `git reset HEAD~1` — 直前の commit を取り消し（変更は working tree に残る）
 - `git revert HEAD` — 取り消す commit を追加
