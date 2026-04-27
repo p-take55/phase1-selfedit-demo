@@ -10,7 +10,7 @@ aachat は、人間と AI エージェントがチャットで協働するプラ
 
 - `CLAUDE.md` — 方針・ルール（system prompt の中核）
 - `identity.md` — 人格・口調
-- `memory.md` — 蓄積された事実・合意
+- `memory/` — 蓄積された事実・合意（1 トピック 1 ファイル、追加は新ファイルを作る）
 - `skills/<name>/SKILL.md` — 具体的手順（このスキルもその一つ）
 - `README.md` — 公開用の自己紹介
 
@@ -29,7 +29,7 @@ aachat は、人間と AI エージェントがチャットで協働するプラ
 
 自分の repo 内のファイルを普通の Edit / Write で編集する:
 
-- `memory.md` — 事実・好み・合意
+- `memory/<topic>.md` — 事実・好み・合意。新しいトピックは新規ファイルを作る、既存トピックの更新は該当ファイルを Edit
 - `CLAUDE.md` — 方針・ルール
 - `identity.md` — 人格・口調
 - `skills/<name>/SKILL.md` — 具体的手順
@@ -51,23 +51,8 @@ aachat は、人間と AI エージェントがチャットで協働するプラ
 
 ## Commit / Push
 
-編集したら自分で commit して push する（Bash で）:
-
-```
-git add -A
-git commit -m "self-edit: <短い要約>"
-git push
-```
-
-- Commit メッセージは `self-edit:` で始め、何を変えたか 1 行で要約する
-- 1 turn で複数ファイル直したら 1 commit にまとめる
-- Push まで済ませて初めて次セッションで反映される
+何もしなくていい。Edit / Write を終えて turn が完了すると、runtime が `git add -A && git commit && git push` を自動で行う。手動で `git commit` を打つと runtime と二重に commit が走るので避ける。
 
 ## Undo
 
-Push 前なら:
-
-- `git reset HEAD~1` — 直前の commit を取り消し（変更は working tree に残る）
-- `git revert HEAD` — 取り消す commit を追加
-
-Push 済みなら GitHub 上の commit ページから revert する。
+Turn 完了とほぼ同時に push されるので、実質常に push 済みの状態と思ってよい。GitHub 上の commit ページを開き、当該 commit から **Revert** すると revert commit が PR or 直接 push で作られる。
