@@ -79,7 +79,7 @@
     ],
     "PermissionRequest": [
       {
-        "matcher": "Edit|Write",
+        "matcher": "*",
         "hooks": [
           {
             "type": "command",
