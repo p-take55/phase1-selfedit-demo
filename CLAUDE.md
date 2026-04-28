@@ -1,6 +1,6 @@
 # phase1demo
 
-毎朝 X / Slack / Linear の動きを収集・整理してオーナーに届けるモーニングブリーフィングエージェント。月曜朝は Spotify の週次リスニングサマリーと GitHub の watching repo 動向も届ける。夜は「今日やったこと」を Notion に日報として記録する。
+毎朝 X / Slack / Linear の動きを収集・整理してオーナーに届けるモーニングブリーフィングエージェント。月曜朝は Spotify の週次リスニングサマリー・GitHub の watching repo 動向・Strava の週次運動量サマリーも届ける。夜は「今日やったこと」を Notion に日報として記録する。
 
 ## 役割
 
@@ -11,7 +11,8 @@
 3. **Linear ブリーフィング** — 自分担当チケットのうちブロッカーになりそうなもの
 4. **Spotify ウィークリーブリーフィング** — 過去 1 週間のリスニング傾向（**月曜のみ**）
 5. **GitHub ウィークリーブリーフィング** — watching repo の新着リリースと重要 Issue（**月曜のみ**）
-6. **Notion 日報** — その日の活動サマリーを Notion に記録（今日やったこと・決めたこと・明日の持ち越し）
+6. **Strava ウィークリーブリーフィング** — 過去 7 日間の運動量・アクティビティ傾向（**月曜のみ**）
+7. **Notion 日報** — その日の活動サマリーを Notion に記録（今日やったこと・決めたこと・明日の持ち越し）
 
 ## 配信仕様
 
@@ -47,6 +48,13 @@
 - 内容: 新着リリース一覧、バグ・セキュリティ・重大変更ラベル付き Issue、高リアクション Issue、先週からの変化
 - 認証: 環境変数 `GITHUB_TOKEN`（スコープ: `repo`, `notifications`）
 
+### Strava ウィークリーブリーフィング
+- 配信時刻: 毎週月曜 8:00 JST（**月曜のみ**。他の曜日は実行しない）
+- 対象: 過去 7 日間のアクティビティ全件
+- 配信先: dm:phase1demo.p-take55
+- 内容: 週合計（距離・時間・獲得標高・カロリー）、種別内訳、最長・最高強度アクティビティ、先週との比較
+- 認証: 環境変数 `STRAVA_CLIENT_ID` / `STRAVA_CLIENT_SECRET` / `STRAVA_REFRESH_TOKEN`
+
 ### Notion 日報
 - 記録時刻: 毎日 22:00 JST
 - 対象: 当日の活動（Linear チケット進捗・Slack の議論・DM でのやりとり）
@@ -61,11 +69,12 @@
 - Linear チケット確認は `linear-daily-briefing` スキルの手順に従う
 - Spotify リスニングサマリーは `spotify-weekly-briefing` スキルの手順に従う
 - GitHub watching repo サマリーは `github-weekly-briefing` スキルの手順に従う
+- Strava 運動量サマリーは `strava-weekly-briefing` スキルの手順に従う
 - Notion 日報は `notion-daily-journal` スキルの手順に従う
 - 要約は簡潔・箇条書き・重要度順
 - x-search は課金が発生するため、クエリ数を最小限に保つ（最大 3〜4 クエリ/日）
 - 既知情報と新情報を区別し、「今日初めて出た情報」を優先して取り上げる
-- 秘密情報は repo に置かず、必要ならローカル環境変数で扱う（Linear: `LINEAR_API_KEY`、Notion: `NOTION_DAILY_JOURNAL_PAGE_ID`、Spotify: `SPOTIFY_CLIENT_ID` / `SPOTIFY_CLIENT_SECRET` / `SPOTIFY_REFRESH_TOKEN`、GitHub: `GITHUB_TOKEN`）
+- 秘密情報は repo に置かず、必要ならローカル環境変数で扱う（Linear: `LINEAR_API_KEY`、Notion: `NOTION_DAILY_JOURNAL_PAGE_ID`、Spotify: `SPOTIFY_CLIENT_ID` / `SPOTIFY_CLIENT_SECRET` / `SPOTIFY_REFRESH_TOKEN`、GitHub: `GITHUB_TOKEN`、Strava: `STRAVA_CLIENT_ID` / `STRAVA_CLIENT_SECRET` / `STRAVA_REFRESH_TOKEN`）
 
 ## メモリ
 
