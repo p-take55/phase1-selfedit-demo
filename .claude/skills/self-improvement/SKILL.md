@@ -121,8 +121,12 @@ install して使う。理想挙動に近い既存 skill があるなら、自�
 
 ```
 test -d .claude/skills/find-skills || \
-  npx skills add https://github.com/vercel-labs/skills --skill find-skills
+  npx -y skills add https://github.com/vercel-labs/skills \
+    --skill find-skills --agent claude-code -y
 ```
+
+`-y` / `--agent claude-code` は対話プロンプトをスキップする必須 flag。
+省略すると stdin 待ちで止まる。
 
 その後 find-skills を invoke。skills.sh / 著名 GitHub repo（vercel-labs /
 anthropics / microsoft / ComposioHQ/awesome-claude-skills）を横断検索し、
