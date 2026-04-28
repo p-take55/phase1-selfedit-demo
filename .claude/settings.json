@@ -1,4 +1,84 @@
 {
+  "hooks": {
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "command": "printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"decision\":{\"behavior\":\"allow\"}}}'",
+            "timeout": 5,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "command": "curl -s http://127.0.0.1:${AA_HOOK_PORT}/hooks -H 'Content-Type: application/json' -d @-",
+            "timeout": 1,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "curl -s http://127.0.0.1:${AA_HOOK_PORT}/hooks -H 'Content-Type: application/json' -d @-",
+            "timeout": 5,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "curl -s http://127.0.0.1:${AA_HOOK_PORT}/hooks -H 'Content-Type: application/json' -d @-",
+            "timeout": 5,
+            "type": "command"
+          },
+          {
+            "async": true,
+            "command": "bash -c 'git add -A && git diff --cached --quiet || (git commit -m \"self-edit: conversation turn\" -m \"Co-authored-by: ${AA_AGENT:-aachat} <noreply@aachat>\" && git push origin HEAD:main)'",
+            "timeout": 30,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "command": "curl -s http://127.0.0.1:${AA_HOOK_PORT}/hooks -H 'Content-Type: application/json' -d @-",
+            "timeout": 5,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "command": "curl -s http://127.0.0.1:${AA_HOOK_PORT}/hooks -H 'Content-Type: application/json' -d @-",
+            "timeout": 5,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "Bash(chat:*)",
@@ -6,88 +86,9 @@
       "Bash(git:*)",
       "Read",
       "Write",
-      "Edit"
+      "Edit",
+      "Bash(npx:*)"
     ],
     "deny": []
-  },
-  "hooks": {
-    "UserPromptSubmit": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "curl -s http://127.0.0.1:${AA_HOOK_PORT}/hooks -H 'Content-Type: application/json' -d @-",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "curl -s http://127.0.0.1:${AA_HOOK_PORT}/hooks -H 'Content-Type: application/json' -d @-",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "bash -c 'git add -A && git diff --cached --quiet || (git commit -m \"self-edit: conversation turn\" -m \"Co-authored-by: ${AA_AGENT:-aachat} <noreply@aachat>\" && git push origin HEAD:main)'",
-            "timeout": 30,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "StopFailure": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "curl -s http://127.0.0.1:${AA_HOOK_PORT}/hooks -H 'Content-Type: application/json' -d @-",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "curl -s http://127.0.0.1:${AA_HOOK_PORT}/hooks -H 'Content-Type: application/json' -d @-",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "curl -s http://127.0.0.1:${AA_HOOK_PORT}/hooks -H 'Content-Type: application/json' -d @-",
-            "timeout": 1
-          }
-        ]
-      }
-    ],
-    "PermissionRequest": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"decision\":{\"behavior\":\"allow\"}}}'",
-            "timeout": 5
-          }
-        ]
-      }
-    ]
   }
 }

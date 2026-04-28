@@ -23,10 +23,13 @@ instructions として有効**。再 invoke は不要、応答する前に内的
 
 ### Hard rules（無条件）
 
-1. **Step 4 の WebSearch を実行する前に Step 5 以降に進まない**
+1. **Step 4 の find-skills 起動と WebSearch を実行する前に Step 5 以降に進まない**
 2. **Step 5 の設計提案メッセージを送る前に、新規ファイル Write / 能力追加 Edit /
    git commit を実行しない**
 3. **install / 認証 / API key 発行 / cron 登録はユーザー承認なしに実行しない**
+   （find-skills の bootstrap と find-skills 経由の skill 検索は例外。allow
+   list で許可されている `npx` で完結し、副作用は agent 内 `.claude/skills/`
+   への書き込みに閉じる）
 4. ルールから外れる必要があれば、外す理由を一言明示してから外す。黙って
    省略しない
 
@@ -104,37 +107,57 @@ agent の土台が埋まっているかをまず読む。空・placeholder・テ
 学習データは陳腐化している前提。MCP server も skill catalog も公開ライブラリも、
 API のレート制限も推奨パターンも、移り変わるのが前提。
 
-**WebSearch を最低 1 回呼ぶ**。これは hard requirement。
+**find-skills の起動と WebSearch を最低 1 回ずつ呼ぶ**。これは hard requirement。
 
-#### 調査で押さえる観点
+#### Step 4a: 既存 skill / agent を漁る（find-skills）
 
-- **既存の道具**: 公開されている MCP server / plugin / skill / agent / OSS
-  - `claude.com/plugins`、`anthropics/skills` レポ、aachat Discover (`aachat agent search`)
-  - MCP server registry: `smithery.ai`、`lobehub.com/mcp`、`modelcontextprotocol` org
-  - `~/.claude/skills/`、自分の `skills/` 配下
-  - npm / pip / brew の関連 package
-- **解き方の定石**: その workflow を実装するときの最新の手順 / 落とし穴 / 推奨設定
-  - 例: ニュース要約 → 重複排除・トピッククラスタリング・配信頻度・優先順位付け
-  - 例: 定期 fetch → rate limit・retry・差分検出・タイムゾーン
-  - 例: SaaS 連携 → 認証方式・スコープ最小化・token rotation
+aachat agent は skill 軸の漁り役として
+[find-skills](https://skills.sh/vercel-labs/skills/find-skills) を runtime
+install して使う。理想挙動に近い既存 skill があるなら、自前で書くより先に
+**掘って adapt する**のが速い。MCP も skill としてラップされていることが多く、
+ここで連携パターンも一緒に拾える。
+
+**Bootstrap**（未 install のとき初回だけ。allow list で `Bash(npx:*)` 許可済み）:
+
+```
+test -d .claude/skills/find-skills || \
+  npx skills add https://github.com/vercel-labs/skills --skill find-skills
+```
+
+その後 find-skills を invoke。skills.sh / 著名 GitHub repo（vercel-labs /
+anthropics / microsoft / ComposioHQ/awesome-claude-skills）を横断検索し、
+install 数 / source reputation / GitHub stars で品質を仕分けて候補を返す。
+
+返ってきた候補の install command と SKILL.md は、Step 5 の設計提案に
+**そのまま** 採用候補として乗せる（コピペ install ではなく、ユーザに install
+して良いか提案として渡す）。
+
+#### Step 4b: find-skills でカバーされない範囲（WebSearch）
+
+公開 skill 化されていない情報を WebSearch で埋める:
+
 - **API / 仕様の最新状態**: 廃止 / 値変更 / 新エンドポイント / scope 要件の更新
+- **解き方の定石**: rate limit / retry / 差分検出 / token rotation
 - **目的に合った先行事例**: 同じ要件で先に作っている人 / プロダクトのアプローチ
+- **MCP 直接 registry**（skill 経由で見つからないとき）: smithery.ai、
+  modelcontextprotocol org
 
 #### 検索クエリ例
 
-- `<service> mcp server 2026`（最新年指定で旧情報を弾く）
-- `<service> claude skill smithery`
-- `<workflow type> best practices 2026`
 - `<service> api deprecated changes`
+- `<workflow type> best practices 2026`（最新年指定で旧情報を弾く）
+- `<service> mcp server smithery 2026`
 
 ベストプラクティスから抽出するのは文言ではなく「どの能力 / どの判断軸が
 理想挙動を支えているか」。
 
-❌ NG: ToolSearch / Read / Glob だけで終わらせる（WebSearch の代替にならない）
-❌ NG: 内部 Explore subagent だけで済ませる（外部の最新情報を取りに行ってない）
+❌ NG: find-skills を bootstrap せず WebSearch だけで済ませる
+❌ NG: WebSearch を省略して find-skills だけで済ませる
+❌ NG: ToolSearch / Read / Glob だけで終わらせる（外部の最新情報を取りに行ってない）
+❌ NG: 内部 Explore subagent だけで済ませる
 ❌ NG: 「他のスキルと似てる」「視界内に MCP がある」を理由に省略
 ❌ NG: 過去の memory / knowledge だけで判断（陳腐化前提を忘れる）
-✅ OK: WebSearch を呼んで、最新（直近数ヶ月）の情報を優先して読む
+✅ OK: find-skills + WebSearch 両方を呼んで、最新（直近数ヶ月）の情報を優先
 
 ### Step 5: 設計提案 → ユーザー合意
 
@@ -173,18 +196,21 @@ API のレート制限も推奨パターンも、移り変わるのが前提。
 
 self-improvement 系の依頼に応答する前に、内的に確認:
 
+- [ ] このターンで find-skills を起動して候補を確認したか？
 - [ ] このターンで WebSearch を 1 回以上呼んだか？
 - [ ] 設計提案メッセージをユーザーに送ったか？
 - [ ] ユーザーの「進めて」承認を受け取ってから Write / Edit / commit しているか？
 - [ ] install / 認証 / cron はユーザーに依頼した（自分で実行していない）か？
+      （find-skills の bootstrap だけは例外）
 
 ひとつでも No なら、応答を中断して該当 Step に戻る。
 
 ## このスキルが失敗とみなされる条件
 
+- find-skills を起動せずに Step 5 / 6 を実行した
 - WebSearch を 1 回も呼ばずに Step 5 / 6 を実行した
 - 設計提案メッセージを送る前に Write / Edit / git commit を実行した
-- ユーザー承認なしに install / 認証 / cron を実行した
+- find-skills bootstrap 以外の install / 認証 / cron をユーザー承認なしに実行した
 - 「N 回目だから」「他と似てるから」を理由に黙って省略した
 
 これに該当する自分の出力に気づいたら、止めて Step 4 からやり直す。
@@ -197,9 +223,10 @@ self-improvement 系の依頼に応答する前に、内的に確認:
 - ギャップが言語化されており、それを埋める手段になっている
 - 土台（`CLAUDE.md` / skills / `environment.yaml` / `knowledge/`）の空欄を
   見落とさず、必要なら頼まれていなくても変更提案を上げている
-- workflow / 連携 / skill を扱う時は **毎回必ず** WebSearch でベストプラクティス
-  を調査している。既存資産（plugin / skill / MCP server / agent）と先行事例の
-  解き方を踏まえ、流用できるものがあればまずその install 提案を返している
+- workflow / 連携 / skill を扱う時は **毎回必ず** find-skills で公開 skill を
+  漁り、WebSearch でベストプラクティスを調査している。既存資産（skill / plugin
+  / MCP server / agent）と先行事例の解き方を踏まえ、流用できるものがあれば
+  まずその install 提案を返している
 - 設計と実装を分けている。install / 認証 / secret / 外部サービス連携は
   **設計段階でユーザー承認を取り**、合意してから次に進んでいる
 - 文言追加で済まない場合は MCP / CLI / package 追加まで踏み込んでいる
@@ -211,8 +238,9 @@ self-improvement 系の依頼に応答する前に、内的に確認:
 
 - 要求理解（Step 1-2）を飛ばして手段から始める
 - 土台が空のまま個別 skill だけを足す（identity が無い agent に技だけ持たせない）
-- ベストプラクティス調査をスキップする（毎回 WebSearch を呼んで最新を確認する。
-  「他の skill と似ている」「視界内 MCP で十分そう」を理由に省略しない）
+- ベストプラクティス調査をスキップする（毎回 find-skills と WebSearch の
+  両方を呼んで最新を確認する。「他の skill と似ている」「視界内 MCP で
+  十分そう」を理由に省略しない）
 - ユーザー承認なしに install / 認証 / secret 設定 / cron 登録に進む
   （self-edit 範囲を超える操作は必ず先に提案して合意を取る）
 - ギャップを言語化せず、思いつきで skill を増やす
